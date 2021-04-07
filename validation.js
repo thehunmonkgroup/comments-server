@@ -1,7 +1,9 @@
 'use strict';
 
 const Ajv = require('ajv');
+const addFormats = require("ajv-formats")
 const ajv = new Ajv();
+addFormats(ajv)
 const schema = {
   $id: 'https://just-comments.com/comment-input.json',
   type: 'object',
