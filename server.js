@@ -58,6 +58,33 @@ async function createComment(req) {
   return mapComment(comment);
 }
 
+async function previewComment(req) {
+  const comment = req.body;
+
+  const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
+
+  const valid = validateComment(comment);
+
+  if (!valid) {
+    throw new Error(
+      `Request validation failed: ${JSON.stringify(comment)} ${JSON.stringify(
+        validateComment.errors,
+      )}`,
+    );
+  }
+
+  comment.userId = userId;
+  comment.username = username;
+  comment.userPic = userPic;
+  comment.userUrl = userUrl;
+  comment.userEmail = userEmail;
+  comment.commentId = comment.commentId || uuid.v4();
+  comment.createdAt = new Date().toISOString();
+  comment.commentUrl = getCommentUrl(comment);
+
+  return mapComment(comment);
+}
+
 function getCommentUrl(comment) {
   const commentItemId = comment.originalItemId;
   const parsedCommentUrl = url.parse(
@@ -96,6 +123,10 @@ app.get('/v2/comments', (req, res, next) =>
 
 app.post('/comments/create', (req, res, next) =>
   createComment(req).then((response) => res.json(response)),
+);
+
+app.post('/comments/create', (req, res, next) =>
+  previewComment(req).then((response) => res.json(response)),
 );
 
 app.listen(port, () => console.log(`JustComments listening on port ${port}!`));
