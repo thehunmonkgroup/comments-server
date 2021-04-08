@@ -4,6 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const uuid = require('uuid');
 const url = require('url');
+const util = require('util');
+const format = util.format;
+const got = require('got');
 
 const { validateComment } = require('./validation');
 const { renderMarkdown } = require('./markdown');
@@ -27,6 +30,26 @@ async function getComments(req) {
 function getUserData(req) {
   const data = req.headers.authorization.split('===')[1];
   return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
+}
+
+async function validateCaptcha(req) {
+  const captchaResult = req.body.captchaResult;
+  if(captchaResult === undefined || captchaResult === '' || captchaResult === null) {
+    throw new Error(`Request validation failed: Please select captcha`);
+  }
+  try {
+    var secretKey = config.recaptchaSecretKey;
+    // req.connection.remoteAddress will provide IP address of connected user.
+    var verificationUrl = format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", secretKey, captchaResult, req.connection.remoteAddress);
+    const response = await got(verificationUrl);
+    const data = JSON.parse(response);
+    // Success will be true or false depending upon captcha validation.
+    if(!data.success) {
+      throw new Error(`Request validation failed: Failed captcha verification`);
+    }
+  } catch (error) {
+    throw new Error(`Request validation failed: captcha verification error: ${error}`);
+  }
 }
 
 async function createComment(req) {
@@ -100,7 +123,7 @@ app.get('/v2/comments', (req, res, next) =>
 );
 
 app.post('/comments/create', (req, res, next) =>
-  createComment(req).then((response) => res.json(response)),
+  validateCaptcha(req).then(() => createComment(req)).then((response) => res.json(response)).catch((err) => next(err)),
 );
 
 app.post('/comments/preview', (req, res, next) =>
