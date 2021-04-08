@@ -59,7 +59,7 @@ async function createComment(req) {
 
 function previewComment(req) {
   return {
-    htmlMessage: renderMarkdown(req.message),
+    htmlMessage: renderMarkdown(req.body.message),
   };
 }
 
