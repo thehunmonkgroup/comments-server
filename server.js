@@ -29,7 +29,7 @@ function getUserData(req) {
   return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
 }
 
-async function createComment(req) {
+function prepareComment(req) {
   const comment = req.body;
 
   const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
@@ -53,35 +53,17 @@ async function createComment(req) {
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
 
-  await storeComment(comment);
+  return comment
+}
 
+async function createComment(req) {
+  const comment = prepareComment(req);
+  await storeComment(comment);
   return mapComment(comment);
 }
 
 async function previewComment(req) {
-  const comment = req.body;
-
-  const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
-
-  const valid = validateComment(comment);
-
-  if (!valid) {
-    throw new Error(
-      `Request validation failed: ${JSON.stringify(comment)} ${JSON.stringify(
-        validateComment.errors,
-      )}`,
-    );
-  }
-
-  comment.userId = userId;
-  comment.username = username;
-  comment.userPic = userPic;
-  comment.userUrl = userUrl;
-  comment.userEmail = userEmail;
-  comment.commentId = comment.commentId || uuid.v4();
-  comment.createdAt = new Date().toISOString();
-  comment.commentUrl = getCommentUrl(comment);
-
+  const comment = prepareComment(req);
   return mapComment(comment);
 }
 
@@ -125,7 +107,7 @@ app.post('/comments/create', (req, res, next) =>
   createComment(req).then((response) => res.json(response)),
 );
 
-app.post('/comments/create', (req, res, next) =>
+app.post('/comments/preview', (req, res, next) =>
   previewComment(req).then((response) => res.json(response)),
 );
 
