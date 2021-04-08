@@ -1,4 +1,6 @@
 config.js
+npm-shrinkwrap.json
+
 # Logs
 logs
 *.log
