@@ -29,7 +29,7 @@ function getUserData(req) {
   return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
 }
 
-function prepareComment(req) {
+async function createComment(req) {
   const comment = req.body;
 
   const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
@@ -53,18 +53,14 @@ function prepareComment(req) {
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
 
-  return comment
-}
-
-async function createComment(req) {
-  const comment = prepareComment(req);
   await storeComment(comment);
   return mapComment(comment);
 }
 
-async function previewComment(req) {
-  const comment = prepareComment(req);
-  return mapComment(comment);
+function previewComment(req) {
+  return {
+    htmlMessage: renderMarkdown(req.message),
+  };
 }
 
 function getCommentUrl(comment) {
@@ -108,7 +104,7 @@ app.post('/comments/create', (req, res, next) =>
 );
 
 app.post('/comments/preview', (req, res, next) =>
-  previewComment(req).then((response) => res.json(response)),
+  res.json(previewComment(req)),
 );
 
 app.listen(port, () => console.log(`JustComments listening on port ${port}!`));
