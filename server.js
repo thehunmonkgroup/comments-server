@@ -38,13 +38,17 @@ async function validateCaptcha(req) {
     throw new Error(`Request validation failed: Please select captcha`);
   }
   try {
-    var secretKey = config.recaptchaSecretKey;
+    const secretKey = config.recaptchaSecretKey;
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     // req.connection.remoteAddress will provide IP address of connected user.
-    var verificationUrl = format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", secretKey, captchaResult, req.connection.remoteAddress);
+    var verificationUrl = format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", secretKey, captchaResult, ip);
     const response = await got(verificationUrl);
-    const data = JSON.parse(response);
+    const data = JSON.parse(response.body);
     // Success will be true or false depending upon captcha validation.
-    if(!data.success) {
+    if(data.success) {
+      console.log(format("Recaptcha validated for IP: %s", ip));
+    }
+    else {
       throw new Error(`Request validation failed: Failed captcha verification`);
     }
   } catch (error) {
