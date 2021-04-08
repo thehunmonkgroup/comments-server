@@ -164,4 +164,4 @@ app.post('/comments/preview', (req, res, next) =>
   res.json(previewComment(req)),
 );
 
-app.listen(port, () => console.log(`JustComments listening on port ${port}!`));
+app.listen(port, () => logger.info("JustComments listening on port: %d", port));
