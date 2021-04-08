@@ -12,6 +12,32 @@ const { validateComment } = require('./validation');
 const { renderMarkdown } = require('./markdown');
 const { storeComment, readComments } = require('./storage');
 const config = require('./config');
+const winston = require("winston");
+
+const logger = winston.createLogger();
+
+const cliLogFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.cli()
+);
+
+if (process.env.NODE_ENV === "production") {
+  //var logDir = config.logDir || __dirname;
+  //logger.add(new winston.transports.File({
+  //  filename: logDir + '/server.log',
+  //  level: 'info'
+  //}));
+  logger.add(new winston.transports.Console({
+    level: 'debug',
+    format: cliLogFormat,
+  }));
+}
+else {
+  logger.add(new winston.transports.Console({
+    level: 'debug',
+    format: cliLogFormat,
+  }));
+}
 
 const app = express();
 const port = config.port;
@@ -22,6 +48,7 @@ app.use(express.json());
 async function getComments(req) {
   const pageId = req.query.pageId;
   const comments = await readComments(pageId);
+  logger.debug(format("Got comments for page ID: %s", pageId));
   return {
     comments: comments.map(mapComment),
   };
@@ -46,12 +73,14 @@ async function validateCaptcha(req) {
     const data = JSON.parse(response.body);
     // Success will be true or false depending upon captcha validation.
     if(data.success) {
-      console.log(format("Recaptcha validated for IP: %s", ip));
+      logger.debug(format("Recaptcha validated for IP: %s", ip));
     }
     else {
+      logger.warn(format("Request validation failed on IP %s: Failed captcha verification", ip));
       throw new Error(`Request validation failed: Failed captcha verification`);
     }
   } catch (error) {
+    logger.warn(format("Request validation failed: Failed captcha verification on IP %s: %s", ip, error));
     throw new Error(`Request validation failed: captcha verification error: ${error}`);
   }
 }
@@ -81,6 +110,7 @@ async function createComment(req) {
   comment.commentUrl = getCommentUrl(comment);
 
   await storeComment(comment);
+  logger.info(format("Created new comment for username: %s, email: %s", username, userEmail));
   return mapComment(comment);
 }
 
