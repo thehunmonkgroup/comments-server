@@ -10,7 +10,6 @@ const got = require('got');
 
 const { validateComment } = require('./validation');
 const { renderMarkdown } = require('./markdown');
-const { storeComment, readComments } = require('./storage');
 const config = require('./config');
 const winston = require("winston");
 
@@ -41,6 +40,8 @@ else {
 
 const app = express();
 const port = config.port;
+const storageEngine = config.storageEngine || 'file';
+const { storeComment, readComments } = require(format("./storage/%s", storageEngine))(logger);
 
 app.use(cors());
 app.use(express.json());
