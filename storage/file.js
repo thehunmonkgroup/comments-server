@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const crypto = require('crypto');
+const util = require('util');
+const format = util.format;
 
 const writeCache = {};
 
@@ -10,7 +12,7 @@ const StorageEngine = function(logger) {
   logger.info("Initializing storage engine: file");
 
   async function storeComment(comment) {
-    logger.debug("Storing comment, user: %s, email: %s", comment.username, comment.userEmail);
+    logger.debug(format("Storing comment, user: %s, email: %s", comment.username, comment.userEmail));
     const key = comment.itemId;
     if (!writeCache[key]) {
       writeCache[key] = fs.createWriteStream(`./comments/${hash(key)}.jsonl`, {
@@ -23,14 +25,14 @@ const StorageEngine = function(logger) {
         if (err) {
           return reject(err);
         }
-        logger.debug("Stored comment, user: %s, email: %s", comment.username, comment.userEmail);
+        logger.debug(format("Stored comment, user: %s, email: %s", comment.username, comment.userEmail));
         resolve();
       });
     });
   }
 
   async function readComments(itemId) {
-    logger.debug("Reading comments: %s", itemId);
+    logger.debug(format("Reading comments: %s", itemId));
     const key = itemId;
     const data = await new Promise((resolve, reject) => {
       fs.readFile(`./comments/${hash(key)}.jsonl`, 'utf8', (err, data) => {
@@ -38,7 +40,7 @@ const StorageEngine = function(logger) {
           console.error(err);
           return resolve(``);
         }
-        logger.debug("Returning comments: %s", itemId);
+        logger.debug(format("Returning comments: %s", itemId));
         resolve(data);
       });
     });
