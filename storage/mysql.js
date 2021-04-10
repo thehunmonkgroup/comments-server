@@ -94,8 +94,10 @@ const StorageEngine = function(config, logger) {
       comment.hidden || 0,
     ];
     try {
-      await db.query(query, args);
-      logger.debug(format("Stored comment, user: %s, email: %s", comment.username, comment.userEmail));
+      const result = await db.query(query, args);
+      const id = result.insertId;
+      logger.debug(format("Stored comment, user: %s, email: %s, id: %d", comment.username, comment.userEmail, id));
+      return id;
     } catch (err) {
       const message = format("Could not store comment, user: %s, email: %s: %s", comment.username, comment.userEmail, err);
       logger.error(message);
@@ -123,6 +125,21 @@ const StorageEngine = function(config, logger) {
     }
   }
 
+  async function deleteCommentById(id) {
+    const db = makeDb(config.mysql);
+    const query = "DELETE FROM comments WHERE id = ?";
+    const args = [id];
+    try {
+      await db.query(query, args);
+    } catch (err) {
+      const message = format("Could not delete comment: %d, %s", id, err);
+      logger.error(message);
+      throw new Error(message);
+    } finally {
+      await db.close();
+    }
+  }
+
   async function dbMonitor() {
     const db = makeDb(config.mysql);
     const query = "SELECT COUNT(id) AS count FROM comments";
@@ -141,6 +158,7 @@ const StorageEngine = function(config, logger) {
   return {
     storeComment,
     readComments,
+    deleteCommentById,
     dbMonitor,
   };
 }

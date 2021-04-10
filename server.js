@@ -7,6 +7,7 @@ const url = require('url');
 const util = require('util');
 const format = util.format;
 const got = require('got');
+const crypto = require('crypto');
 
 const { validateComment } = require('./validation');
 const { renderMarkdown } = require('./markdown');
@@ -41,11 +42,31 @@ else {
 const app = express();
 const port = config.port;
 const storageEngine = config.storageEngine || 'file';
-const { storeComment, readComments, dbMonitor } = require(format("./storage/%s", storageEngine))(config, logger);
+const { storeComment, readComments, deleteCommentById, dbMonitor } = require(format("./storage/%s", storageEngine))(config, logger);
 const { mailAdminComment } = require('./mailer')(config, logger);
 
 app.use(cors());
 app.use(express.json());
+
+function makeHashForId(id) {
+  const idWithHashSecret = format("%s:%s", id, config.hashSecret);
+  return crypto
+    .createHash('md5')
+    .update(idWithHashSecret)
+    .digest('hex');
+}
+
+async function validateAdminHash(id, hash) {
+  const validHash = makeHashForId(id);
+  if (hash == validHash) {
+    logger.debug(format("Valid admin hash for comment ID %d: %s", id, hash));
+  }
+  else {
+    const message = format("Invalid admin hash for comment ID %d: %s", id, hash);
+    logger.warn(message);
+    throw new Error(message);
+  }
+}
 
 function checkApiKey(apiKey) {
   if(config.validApiKeys && !config.validApiKeys.includes(apiKey)) {
@@ -97,6 +118,15 @@ async function validateCaptcha(req) {
   }
 }
 
+async function deleteComment(id) {
+  await deleteCommentById(id);
+  logger.info(format("Deleted comment: %d", id));
+  return {
+    success: true,
+    commentId: id,
+  }
+}
+
 async function createComment(req) {
   const apiKey = req.query.apiKey;
   checkApiKey(apiKey);
@@ -123,9 +153,10 @@ async function createComment(req) {
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
 
-  await storeComment(apiKey, comment);
-  logger.info(format("Created new comment for username: %s, email: %s", username, userEmail));
-  await mailAdminComment(comment);
+  const id = await storeComment(apiKey, comment);
+  logger.info(format("Created new comment for username: %s, email: %s, id: %d", username, userEmail, id));
+  const hash = makeHashForId(id);
+  await mailAdminComment(comment, id, hash);
   return mapComment(comment);
 }
 
@@ -177,6 +208,12 @@ app.get('/v2/comments', (req, res, next) =>
     .then((response) => res.json(response))
     .catch((err) => next(err)),
 );
+
+app.get('/comments/delete/:comment_id/:hash', (req, res, next) => {
+  const id = req.params.comment_id;
+  const hash = req.params.hash;
+  validateAdminHash(id, hash).then(() => deleteComment(id)).then((response) => res.json(response)).catch((err) => next(err));
+});
 
 app.post('/comments/create', (req, res, next) =>
   validateCaptcha(req).then(() => createComment(req)).then((response) => res.json(response)).catch((err) => next(err)),
