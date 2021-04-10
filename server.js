@@ -46,8 +46,17 @@ const { storeComment, readComments } = require(format("./storage/%s", storageEng
 app.use(cors());
 app.use(express.json());
 
+function checkApiKey(apiKey) {
+  if(config.validApiKeys && !config.validApiKeys.includes(apiKey)) {
+    const message = format("Invalid API key: %s", apiKey);
+    logger.warn(message);
+    throw new Error(message);
+  }
+}
+
 async function getComments(req) {
   const apiKey = req.query.apiKey;
+  checkApiKey(apiKey);
   const pageId = req.query.pageId;
   const comments = await readComments(apiKey, pageId);
   logger.debug(format("Got comments for page ID: %s", pageId));
@@ -89,6 +98,7 @@ async function validateCaptcha(req) {
 
 async function createComment(req) {
   const apiKey = req.query.apiKey;
+  checkApiKey(apiKey);
   const comment = req.body;
 
   const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
@@ -152,6 +162,11 @@ function mapComment(data) {
     hidden: false,
   };
 }
+
+app.get('/monitor/', function(_req, res) {
+  logger.debug('Got monitor request');
+  return res.send('up');
+});
 
 app.get('/v2/comments', (req, res, next) =>
   getComments(req)
