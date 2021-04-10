@@ -3,6 +3,7 @@
 const util = require('util');
 const format = util.format;
 const nodemailer = require("nodemailer");
+const { renderMarkdown } = require('./markdown');
 
 const MailEngine = function(config, logger) {
   async function mailAdminComment(comment, id, hash) {
@@ -18,12 +19,13 @@ const MailEngine = function(config, logger) {
   Comment from %s, email: %s
 </p>
 <p>
-Message: <pre>%s</pre>
+Message:
 </p>
+%s
 <p>
   <a href="%s/jc-api/comments/delete/%d/%s">Delete this comment</a>
 </p>
-`, comment.username, comment.userEmail, comment.message, config.mail.adminDomain, id, hash),
+`, comment.username, comment.userEmail, renderMarkdown(comment.message), config.mail.adminDomain, id, hash),
     });
     logger.info(format("Message sent: %s", info.messageId));
   }
