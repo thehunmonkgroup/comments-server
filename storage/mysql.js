@@ -13,12 +13,12 @@ const StorageEngine = function(config, logger) {
       itemId: data.item_id,
       commentUrl: data.comment_url,
       commentId: data.comment_id,
-      replyTo: data.reply_to,
-      parentId: data.parent_id,
+      replyTo: data.reply_to || null,
+      parentId: data.parent_id || null,
       userId: data.user_id,
       username: data.username,
-      userPic: data.user_pic,
-      userUrl: data.user_url,
+      userPic: data.user_pic || null,
+      userUrl: data.user_url || null,
       message: data.message,
       createdAt: createdAt,
       hidden: data.hidden === 1 ? true : false,
@@ -130,7 +130,8 @@ const StorageEngine = function(config, logger) {
     try {
       const comments = await db.query(query, args);
       logger.debug(format("Returning comments: %s", itemId));
-      return comments.map((comment) => castComment(comment));
+      const castedComments = comments.map((comment) => castComment(comment));
+      return castedComments;
     } catch (err) {
       const message = format("Could not retrieve comments, item: %s: %s", itemId, err);
       logger.error(message);

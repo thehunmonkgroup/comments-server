@@ -76,6 +76,33 @@ function checkApiKey(apiKey) {
   }
 }
 
+
+function organizeComments(comments) {
+  const topLevel = [];
+  const parentMap = {};
+  function nestComments(list) {
+    list.forEach((c) =>  {
+      if (parentMap[c.commentId]) {
+        c.nested = nestComments(parentMap[c.commentId]);
+      }
+    });
+    return list;
+  }
+  comments.forEach((comment) => {
+    comment = mapComment(comment);
+    if (comment.parentId) {
+      if (!parentMap[comment.replyTo]) {
+        parentMap[comment.replyTo] = [];
+      }
+      parentMap[comment.replyTo].push(comment);
+    }
+    else {
+      topLevel.push(comment);
+    }
+  });
+  return nestComments(topLevel);
+}
+
 async function getComments(req) {
   const apiKey = req.query.apiKey;
   const queryArgs = {
@@ -87,7 +114,7 @@ async function getComments(req) {
   const comments = await readComments(apiKey, pageId, queryArgs);
   logger.debug(format("Got comments for page ID: %s", pageId));
   return {
-    comments: comments.map(mapComment),
+    comments: organizeComments(comments),
   };
 }
 
