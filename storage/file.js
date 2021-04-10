@@ -8,10 +8,10 @@ const format = util.format;
 const writeCache = {};
 
 
-const StorageEngine = function(logger) {
+const StorageEngine = function(_config, logger) {
   logger.info("Initializing storage engine: file");
 
-  async function storeComment(comment) {
+  async function storeComment(_apiKey, comment) {
     logger.debug(format("Storing comment, user: %s, email: %s", comment.username, comment.userEmail));
     const key = comment.itemId;
     if (!writeCache[key]) {
@@ -31,7 +31,7 @@ const StorageEngine = function(logger) {
     });
   }
 
-  async function readComments(itemId) {
+  async function readComments(_apiKey, itemId) {
     logger.debug(format("Reading comments: %s", itemId));
     const key = itemId;
     const data = await new Promise((resolve, reject) => {

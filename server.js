@@ -41,14 +41,15 @@ else {
 const app = express();
 const port = config.port;
 const storageEngine = config.storageEngine || 'file';
-const { storeComment, readComments } = require(format("./storage/%s", storageEngine))(logger);
+const { storeComment, readComments } = require(format("./storage/%s", storageEngine))(config, logger);
 
 app.use(cors());
 app.use(express.json());
 
 async function getComments(req) {
+  const apiKey = req.query.apiKey;
   const pageId = req.query.pageId;
-  const comments = await readComments(pageId);
+  const comments = await readComments(apiKey, pageId);
   logger.debug(format("Got comments for page ID: %s", pageId));
   return {
     comments: comments.map(mapComment),
@@ -87,6 +88,7 @@ async function validateCaptcha(req) {
 }
 
 async function createComment(req) {
+  const apiKey = req.query.apiKey;
   const comment = req.body;
 
   const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
@@ -110,7 +112,7 @@ async function createComment(req) {
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
 
-  await storeComment(comment);
+  await storeComment(apiKey, comment);
   logger.info(format("Created new comment for username: %s, email: %s", username, userEmail));
   return mapComment(comment);
 }
