@@ -42,6 +42,7 @@ const app = express();
 const port = config.port;
 const storageEngine = config.storageEngine || 'file';
 const { storeComment, readComments, dbMonitor } = require(format("./storage/%s", storageEngine))(config, logger);
+const { mailAdminComment } = require('./mailer')(config, logger);
 
 app.use(cors());
 app.use(express.json());
@@ -124,6 +125,7 @@ async function createComment(req) {
 
   await storeComment(apiKey, comment);
   logger.info(format("Created new comment for username: %s, email: %s", username, userEmail));
+  await mailAdminComment(comment);
   return mapComment(comment);
 }
 
