@@ -123,9 +123,25 @@ const StorageEngine = function(config, logger) {
     }
   }
 
+  async function dbMonitor() {
+    const db = makeDb(config.mysql);
+    const query = "SELECT COUNT(id) AS count FROM comments";
+    try {
+      const result = await db.query(query);
+      return result[0].count;
+    } catch (err) {
+      const message = format("Could not retrieve comment count: %s", err);
+      logger.error(message);
+      throw new Error(message);
+    } finally {
+      await db.close();
+    }
+  }
+
   return {
     storeComment,
     readComments,
+    dbMonitor,
   };
 }
 

@@ -41,7 +41,7 @@ else {
 const app = express();
 const port = config.port;
 const storageEngine = config.storageEngine || 'file';
-const { storeComment, readComments } = require(format("./storage/%s", storageEngine))(config, logger);
+const { storeComment, readComments, dbMonitor } = require(format("./storage/%s", storageEngine))(config, logger);
 
 app.use(cors());
 app.use(express.json());
@@ -164,8 +164,10 @@ function mapComment(data) {
 }
 
 app.get('/monitor/', function(_req, res) {
-  logger.debug('Got monitor request');
-  return res.send('up');
+  dbMonitor().then((count) => {
+    logger.debug(format("Monitor request succeeded, %d comments", count));
+    return res.send('up')
+  }).catch((err) => next(err));
 });
 
 app.get('/v2/comments', (req, res, next) =>
