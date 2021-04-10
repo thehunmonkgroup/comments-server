@@ -78,9 +78,13 @@ function checkApiKey(apiKey) {
 
 async function getComments(req) {
   const apiKey = req.query.apiKey;
+  const queryArgs = {
+    sort: req.query.sort,
+    pageSize: req.query.pageSize,
+  };
   checkApiKey(apiKey);
   const pageId = req.query.pageId;
-  const comments = await readComments(apiKey, pageId);
+  const comments = await readComments(apiKey, pageId, queryArgs);
   logger.debug(format("Got comments for page ID: %s", pageId));
   return {
     comments: comments.map(mapComment),
@@ -156,7 +160,7 @@ async function createComment(req) {
   const id = await storeComment(apiKey, comment);
   logger.info(format("Created new comment for username: %s, email: %s, id: %d", username, userEmail, id));
   const hash = makeHashForId(id);
-  await mailAdminComment(comment, id, hash);
+  mailAdminComment(comment, id, hash);
   return mapComment(comment);
 }
 
@@ -203,11 +207,11 @@ app.get('/monitor/', function(_req, res) {
   }).catch((err) => next(err));
 });
 
-app.get('/v2/comments', (req, res, next) =>
+app.get('/v2/comments', (req, res, next) => {
   getComments(req)
     .then((response) => res.json(response))
-    .catch((err) => next(err)),
-);
+    .catch((err) => next(err));
+});
 
 app.get('/comments/delete/:comment_id/:hash', (req, res, next) => {
   const id = req.params.comment_id;
