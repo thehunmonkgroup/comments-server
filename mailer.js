@@ -23,9 +23,12 @@ Message:
 </p>
 %s
 <p>
+  %s
+</p>
+<p>
   <a href="%s/jc-api/comments/delete/%d/%s">Delete this comment</a>
 </p>
-`, comment.username, comment.userEmail, renderMarkdown(comment.message), config.mail.adminDomain, id, hash),
+`, comment.username, comment.userEmail, renderMarkdown(comment.message), comment.commentUrl, config.mail.adminDomain, id, hash),
     });
     logger.info(format("Message sent: %s", info.messageId));
   }
