@@ -8,7 +8,7 @@ const StorageEngine = function(config, logger) {
   logger.info("Initializing storage engine: mysql");
 
   function castComment(data) {
-    const createdAt = new Date(format("%sZ", data.created_at)).toISOString();
+    const createdAt = new Date(format("%s", data.created_at)).toISOString();
     return {
       itemId: data.item_id,
       commentUrl: data.comment_url,
