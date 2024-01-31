@@ -1,8 +1,6 @@
-'use strict';
-
-const util = require('util');
+import util from 'util';
 const format = util.format;
-const mysql = require('mysql');
+import mysql from 'mysql';
 
 const StorageEngine = function(config, logger) {
   logger.info("Initializing storage engine: mysql");
@@ -179,4 +177,4 @@ const StorageEngine = function(config, logger) {
   };
 }
 
-module.exports = StorageEngine;
+export default StorageEngine;

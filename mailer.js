@@ -1,11 +1,8 @@
-'use strict';
+import nodemailer from 'nodemailer';
+import { renderMarkdown } from './markdown.js';
 
-const util = require('util');
-const format = util.format;
-const nodemailer = require("nodemailer");
-const { renderMarkdown } = require('./markdown');
-
-const MailEngine = function(config, logger) {
+// Define the MailEngine class
+export default function MailEngine(config, logger) {
   async function mailAdminComment(comment, id, hash) {
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport(config.mail.mailer);
@@ -13,29 +10,27 @@ const MailEngine = function(config, logger) {
     let info = await transporter.sendMail({
       from: config.mail.from,
       to: config.mail.adminEmails,
-      subject: format("[NEW COMMENT] User: %s", comment.username),
-      html: format(`
+      subject: `[NEW COMMENT] User: ${comment.username}`,
+      html: `
 <p>
-  Comment from %s, email: %s
+  Comment from ${comment.username}, email: ${comment.userEmail}
 </p>
 <p>
 Message:
 </p>
-%s
+${renderMarkdown(comment.message)}
 <p>
-  %s
+  ${comment.commentUrl}
 </p>
 <p>
-  <a href="%s/jc-api/comments/delete/%d/%s">Delete this comment</a>
+  <a href="${config.mail.adminDomain}/jc-api/comments/delete/${id}/${hash}">Delete this comment</a>
 </p>
-`, comment.username, comment.userEmail, renderMarkdown(comment.message), comment.commentUrl, config.mail.adminDomain, id, hash),
+`,
     });
-    logger.info(format("Message sent: %s", info.messageId));
+    logger.info(`Message sent: ${info.messageId}`);
   }
 
   return {
     mailAdminComment,
   };
-
 }
-module.exports = MailEngine;

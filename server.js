@@ -1,55 +1,43 @@
-'use strict';
+import util from 'util';
+import express from 'express';
+import cors from 'cors';
+import crypto from 'crypto';
+import got from 'got';
+import { createLogger, format, transports } from 'winston';
+import validateComment from './validation.js';
+import { renderMarkdown } from './markdown.js';
+import config from './config.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const express = require('express');
-const cors = require('cors');
-const uuid = require('uuid');
-const url = require('url');
-const util = require('util');
-const format = util.format;
-const got = require('got');
-const crypto = require('crypto');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const { validateComment } = require('./validation');
-const { renderMarkdown } = require('./markdown');
-const config = require('./config');
-const winston = require("winston");
-
-const logger = winston.createLogger();
-
-const cliLogFormat = winston.format.combine(
-  winston.format.colorize(),
-  winston.format.cli()
-);
-
-if (process.env.NODE_ENV === "production") {
-  //var logDir = config.logDir || __dirname;
-  //logger.add(new winston.transports.File({
-  //  filename: logDir + '/server.log',
-  //  level: 'info'
-  //}));
-  logger.add(new winston.transports.Console({
-    level: 'debug',
-    format: cliLogFormat,
-  }));
-}
-else {
-  logger.add(new winston.transports.Console({
-    level: 'debug',
-    format: cliLogFormat,
-  }));
-}
+const logger = createLogger({
+  format: format.combine(
+    format.colorize(),
+    format.cli()
+  ),
+  transports: [
+    new transports.Console({
+      level: 'debug',
+    }),
+  ],
+});
 
 const app = express();
 const port = config.port;
 const storageEngine = config.storageEngine || 'file';
-const { storeComment, readComments, deleteCommentById, dbMonitor } = require(format("./storage/%s", storageEngine))(config, logger);
-const { mailAdminComment } = require('./mailer')(config, logger);
+const storageModule = await import(`./storage/${storageEngine}.js`);
+const { storeComment, readComments, deleteCommentById, dbMonitor } = storageModule.default(config, logger);
+const mailerModule = await import('./mailer.js');
+const { mailAdminComment } = mailerModule.default(config, logger);
 
 app.use(cors());
 app.use(express.json());
 
 function makeHashForId(id) {
-  const idWithHashSecret = format("%s:%s", id, config.hashSecret);
+  const idWithHashSecret = `${id}:${config.hashSecret}`;
   return crypto
     .createHash('md5')
     .update(idWithHashSecret)
@@ -58,19 +46,18 @@ function makeHashForId(id) {
 
 async function validateAdminHash(id, hash) {
   const validHash = makeHashForId(id);
-  if (hash == validHash) {
-    logger.debug(format("Valid admin hash for comment ID %d: %s", id, hash));
-  }
-  else {
-    const message = format("Invalid admin hash for comment ID %d: %s", id, hash);
+  if (hash === validHash) {
+    logger.debug(`Valid admin hash for comment ID ${id}: ${hash}`);
+  } else {
+    const message = `Invalid admin hash for comment ID ${id}: ${hash}`;
     logger.warn(message);
     throw new Error(message);
   }
 }
 
 function checkApiKey(apiKey) {
-  if(config.validApiKeys && !config.validApiKeys.includes(apiKey)) {
-    const message = format("Invalid API key: %s", apiKey);
+  if (config.validApiKeys && !config.validApiKeys.includes(apiKey)) {
+    const message = `Invalid API key: ${apiKey}`;
     logger.warn(message);
     throw new Error(message);
   }
@@ -112,7 +99,7 @@ async function getComments(req) {
   checkApiKey(apiKey);
   const pageId = req.query.pageId;
   const comments = await readComments(apiKey, pageId, queryArgs);
-  logger.debug(format("Got comments for page ID: %s", pageId));
+  logger.debug(util.format("Got comments for page ID: %s", pageId));
   return {
     comments: organizeComments(comments),
   };
@@ -132,26 +119,26 @@ async function validateCaptcha(req) {
     const secretKey = config.recaptchaSecretKey;
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     // req.connection.remoteAddress will provide IP address of connected user.
-    var verificationUrl = format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", secretKey, captchaResult, ip);
+    var verificationUrl = util.format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", secretKey, captchaResult, ip);
     const response = await got(verificationUrl);
     const data = JSON.parse(response.body);
     // Success will be true or false depending upon captcha validation.
     if(data.success) {
-      logger.debug(format("Recaptcha validated for IP: %s", ip));
+      logger.debug(util.format("Recaptcha validated for IP: %s", ip));
     }
     else {
-      logger.warn(format("Request validation failed on IP %s: Failed captcha verification", ip));
+      logger.warn(util.format("Request validation failed on IP %s: Failed captcha verification", ip));
       throw new Error(`Request validation failed: Failed captcha verification`);
     }
   } catch (error) {
-    logger.warn(format("Request validation failed: Failed captcha verification on IP %s: %s", ip, error));
+    logger.warn(util.format("Request validation failed: Failed captcha verification on IP %s: %s", ip, error));
     throw new Error(`Request validation failed: captcha verification error: ${error}`);
   }
 }
 
 async function deleteComment(id) {
   await deleteCommentById(id);
-  logger.info(format("Deleted comment: %d", id));
+  logger.info(util.format("Deleted comment: %d", id));
   return {
     success: true,
     commentId: id,
@@ -185,7 +172,7 @@ async function createComment(req) {
   comment.commentUrl = getCommentUrl(comment);
 
   const id = await storeComment(apiKey, comment);
-  logger.info(format("Created new comment for username: %s, email: %s, id: %d", username, userEmail, id));
+  logger.info(util.format("Created new comment for username: %s, email: %s, id: %d", username, userEmail, id));
   const hash = makeHashForId(id);
   mailAdminComment(comment, id, hash);
   return mapComment(comment);
@@ -227,31 +214,51 @@ function mapComment(data) {
   };
 }
 
-app.get('/monitor/', function(_req, res) {
-  dbMonitor().then((count) => {
-    logger.debug(format("Monitor request succeeded, %d comments", count));
-    return res.send('up')
-  }).catch((err) => next(err));
+app.get('/monitor/', async (_req, res, next) => {
+  try {
+    const count = await dbMonitor();
+    logger.debug(`Monitor request succeeded, ${count} comments`);
+    res.send('up');
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get('/v2/comments', (req, res, next) => {
-  getComments(req)
-    .then((response) => res.json(response))
-    .catch((err) => next(err));
+app.get('/comments', async (req, res, next) => {
+  try {
+    const response = await getComments(req);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.get('/comments/delete/:comment_id/:hash', (req, res, next) => {
+app.get('/comments/delete/:comment_id/:hash', async (req, res, next) => {
   const id = req.params.comment_id;
   const hash = req.params.hash;
-  validateAdminHash(id, hash).then(() => deleteComment(id)).then((response) => res.json(response)).catch((err) => next(err));
+  try {
+    await validateAdminHash(id, hash);
+    const response = await deleteComment(id);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
 });
 
-app.post('/comments/create', (req, res, next) =>
-  validateCaptcha(req).then(() => createComment(req)).then((response) => res.json(response)).catch((err) => next(err)),
-);
+app.post('/comments/create', async (req, res, next) => {
+  try {
+    await validateCaptcha(req);
+    const response = await createComment(req);
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
+});
 
-app.post('/comments/preview', (req, res, next) =>
-  res.json(previewComment(req)),
-);
+app.post('/comments/preview', (req, res) => {
+  res.json(previewComment(req));
+});
 
-app.listen(port, () => logger.info(format("JustComments listening on port: %d", port)));
+app.listen(port, () => {
+  logger.info(`JustComments listening on port: ${port}`);
+});;

@@ -1,8 +1,6 @@
-'use strict';
-
-const fs = require('fs');
-const crypto = require('crypto');
-const util = require('util');
+import fs from 'fs';
+import crypto from 'crypto';
+import util from 'util';
 const format = util.format;
 
 const writeCache = {};
@@ -63,4 +61,4 @@ const StorageEngine = function(_config, logger) {
   };
 }
 
-module.exports = StorageEngine;
+export default StorageEngine;

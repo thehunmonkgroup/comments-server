@@ -1,9 +1,9 @@
-'use strict';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const Ajv = require('ajv');
-const addFormats = require("ajv-formats")
-const ajv = new Ajv();
-addFormats(ajv)
 const schema = {
   $id: 'https://just-comments.com/comment-input.json',
   type: 'object',
@@ -101,10 +101,14 @@ const schema = {
   required: ['itemId', 'originalItemId', 'itemProtocol', 'itemPort', 'message'],
 };
 
-ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-06.json'));
+const ajv = new Ajv();
+addFormats(ajv);
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(path.join(__dirname, 'node_modules', 'ajv', 'lib', 'refs', 'json-schema-draft-06.json'), 'utf-8'));
+
+ajv.addMetaSchema(jsonSchemaDraft06);
 
 const validateComment = ajv.compile(schema);
 
-module.exports = {
-  validateComment,
-};
+export default validateComment;

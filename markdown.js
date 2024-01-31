@@ -1,7 +1,5 @@
-'use strict'
-
-const marked = require('marked');
-const hl = require('highlight.js');
+import { marked } from 'marked';
+import hl from 'highlight.js';
 
 const renderer = new marked.Renderer();
 
@@ -34,6 +32,6 @@ marked.setOptions({
   tables: false,
 });
 
-exports.renderMarkdown = (str) => {
+export const renderMarkdown = (str) => {
   return marked(str).replace(/<a /g, '<a rel="nofollow" ');
 };
