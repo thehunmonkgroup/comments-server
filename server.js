@@ -260,5 +260,5 @@ app.post('/comments/preview', (req, res) => {
 });
 
 app.listen(port, () => {
-  logger.info(`JustComments listening on port: ${port}`);
+  logger.info(`Comments server listening on port: ${port}`);
 });;
