@@ -78,10 +78,10 @@ function organizeComments(comments) {
   comments.forEach((comment) => {
     comment = mapComment(comment);
     if (comment.parentId) {
-      if (!parentMap[comment.replyTo]) {
-        parentMap[comment.replyTo] = [];
+      if (!parentMap[comment.parentId]) {
+        parentMap[comment.parentId] = [];
       }
-      parentMap[comment.replyTo].push(comment);
+      parentMap[comment.parentId].push(comment);
     }
     else {
       topLevel.push(comment);
@@ -103,11 +103,6 @@ async function getComments(req) {
   return {
     comments: organizeComments(comments),
   };
-}
-
-function getUserData(req) {
-  const data = req.headers.authorization.split('===')[1];
-  return JSON.parse(Buffer.from(data, 'base64').toString('utf8'));
 }
 
 async function validateCaptcha(req) {
@@ -150,8 +145,6 @@ async function createComment(req) {
   checkApiKey(apiKey);
   const comment = req.body;
 
-  const { userId, username, userPic, userUrl, userEmail } = getUserData(req);
-
   const valid = validateComment(comment);
 
   if (!valid) {
@@ -162,11 +155,6 @@ async function createComment(req) {
     );
   }
 
-  comment.userId = userId;
-  comment.username = username;
-  comment.userPic = userPic;
-  comment.userUrl = userUrl;
-  comment.userEmail = userEmail;
   comment.commentId = comment.commentId || uuid.v4();
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
@@ -185,14 +173,7 @@ function previewComment(req) {
 }
 
 function getCommentUrl(comment) {
-  const commentItemId = comment.originalItemId;
-  const parsedCommentUrl = url.parse(
-    comment.itemProtocol + '//' + commentItemId + '#jc' + comment.commentId,
-  );
-  parsedCommentUrl.port = comment.itemPort;
-  delete parsedCommentUrl.href;
-  delete parsedCommentUrl.host;
-  return url.format(parsedCommentUrl);
+  return `https://${comment.itemId}#comment-${comment.commentId}`;
 }
 
 function mapComment(data) {
@@ -200,14 +181,9 @@ function mapComment(data) {
     itemId: data.itemId,
     commentUrl: data.commentUrl,
     commentId: data.commentId,
-    replyTo: data.replyTo,
     parentId: data.parentId,
-    userId: data.userId,
     username: data.username,
-    userPic: data.userPic,
-    userUrl: data.userUrl,
     message: data.message,
-    htmlMessage: renderMarkdown(data.message),
     htmlContent: renderMarkdown(data.message),
     createdAt: data.createdAt,
     hidden: false,

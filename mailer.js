@@ -23,7 +23,7 @@ ${renderMarkdown(comment.message)}
   ${comment.commentUrl}
 </p>
 <p>
-  <a href="${config.mail.adminDomain}/jc-api/comments/delete/${id}/${hash}">Delete this comment</a>
+  <a href="${config.mail.adminDomain}/comments-api/comments/delete/${id}/${hash}">Delete this comment</a>
 </p>
 `,
     });

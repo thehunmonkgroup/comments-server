@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const schema = {
-  $id: 'https://just-comments.com/comment-input.json',
+  $id: 'https://comments-server.com/comment-input.json',
   type: 'object',
   definitions: {},
   $schema: 'http://json-schema.org/draft-06/schema#',
@@ -18,33 +18,6 @@ const schema = {
       examples: ['127.0.0.1/demo.html'],
       minLength: 1,
       maxLength: 2048,
-    },
-    originalItemId: {
-      $id: '/properties/originalItemId',
-      type: 'string',
-      title: 'The Originalitemid Schema ',
-      default: '',
-      examples: ['127.0.0.1/demo.html'],
-      minLength: 1,
-      maxLength: 2048,
-    },
-    itemProtocol: {
-      $id: '/properties/itemProtocol',
-      type: 'string',
-      title: 'The Itemprotocol Schema ',
-      default: '',
-      minLength: 1,
-      maxLength: 32,
-      examples: ['http:'],
-    },
-    itemPort: {
-      $id: '/properties/itemPort',
-      type: 'string',
-      title: 'The Itemport Schema ',
-      default: '',
-      minLength: 0,
-      maxLength: 16,
-      examples: ['8080'],
     },
     commentId: {
       $id: '/properties/commentId',
@@ -82,23 +55,8 @@ const schema = {
       type: 'string',
       title: 'pageUrl schema',
     },
-    pageTitle: {
-      $id: '/properties/pageTitle',
-      type: 'string',
-      title: 'pageTitle schema',
-    },
-    locale: {
-      $id: '/properties/locale',
-      type: 'string',
-      title: 'locale schema',
-    },
-    timezone: {
-      $id: '/properties/timezone',
-      type: 'string',
-      title: 'timezone schema',
-    },
   },
-  required: ['itemId', 'originalItemId', 'itemProtocol', 'itemPort', 'message'],
+  required: ['itemId', 'message'],
 };
 
 const ajv = new Ajv();
