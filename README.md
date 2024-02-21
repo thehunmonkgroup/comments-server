@@ -1,6 +1,6 @@
 ## Comments Server
 
-Basic open-source implementation of a server for comments on a static website.
+Basic implementation of a server for comments on a static website.
 
 Derived from original work at [https://github.com/JustComments/jc-server](https://github.com/JustComments/jc-server)
 
