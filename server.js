@@ -143,12 +143,12 @@ async function validateCaptcha(req) {
   }
 }
 
-async function deleteComment(id) {
-  await deleteCommentById(id);
-  logger.info(util.format("Deleted comment: %d", id));
+async function deleteComment(comment_id) {
+  await deleteCommentById(comment_id);
+  logger.info(util.format("Deleted comment: %d", comment_id));
   return {
     success: true,
-    commentId: id,
+    commentId: comment_id,
   }
 }
 
@@ -171,10 +171,10 @@ async function createComment(req) {
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
 
-  const id = await storeComment(apiKey, comment);
-  logger.info(util.format("Created new comment for username: %s, email: %s, id: %d", comment.username, comment.userEmail, id));
-  const hash = makeHashForId(id);
-  mailAdminComment(comment, id, hash);
+  await storeComment(apiKey, comment);
+  logger.info(util.format("Created new comment for username: %s, email: %s, comment_id: %s", comment.username, comment.userEmail, comment.commentId));
+  const hash = makeHashForId(comment.commentId);
+  mailAdminComment(comment, hash);
   return mapComment(comment);
 }
 
@@ -222,11 +222,11 @@ app.get('/comments', async (req, res, next) => {
 });
 
 app.get('/comments/delete/:comment_id/:hash', async (req, res, next) => {
-  const id = req.params.comment_id;
+  const comment_id = req.params.comment_id;
   const hash = req.params.hash;
   try {
-    await validateAdminHash(id, hash);
-    const response = await deleteComment(id);
+    await validateAdminHash(comment_id, hash);
+    const response = await deleteComment(comment_id);
     res.json(response);
   } catch (err) {
     res.status(500).json({message: err.message});

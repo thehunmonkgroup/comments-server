@@ -105,14 +105,14 @@ const StorageEngine = function(config, logger) {
     }
   }
 
-  async function deleteCommentById(id) {
+  async function deleteCommentById(comment_id) {
     const db = makeDb(config.mysql);
-    const query = "DELETE FROM comments WHERE id = ?";
-    const args = [id];
+    const query = "DELETE FROM comments WHERE comment_id = ? or parent_id = ?";
+    const args = [comment_id, comment_id];
     try {
       await db.query(query, args);
     } catch (err) {
-      const message = format("Could not delete comment: %d, %s", id, err);
+      const message = format("Could not delete comment: %d, %s", comment_id, err);
       logger.error(message);
       throw new Error(message);
     } finally {

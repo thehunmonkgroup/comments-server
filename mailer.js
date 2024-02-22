@@ -3,7 +3,7 @@ import { renderMarkdown } from './markdown.js';
 
 // Define the MailEngine class
 export default function MailEngine(config, logger) {
-  async function mailAdminComment(comment, id, hash) {
+  async function mailAdminComment(comment, hash) {
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport(config.mail.mailer);
     // send mail with defined transport object
@@ -23,7 +23,7 @@ ${renderMarkdown(comment.message)}
   ${comment.commentUrl}
 </p>
 <p>
-  <a href="${config.mail.adminDomain}/comments-api/comments/delete/${id}/${hash}">Delete this comment</a>
+  <a href="${config.mail.adminDomain}/comments-api/comments/delete/${comment.commentId}/${hash}">Delete this comment</a>
 </p>
 `,
     });
