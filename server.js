@@ -235,7 +235,9 @@ app.get('/comments/delete/:comment_id/:hash', async (req, res, next) => {
 
 app.post('/comments/create', async (req, res, next) => {
   try {
-    await validateCaptcha(req);
+    if (config.recaptchaSecretKey) {
+      await validateCaptcha(req);
+    }
     const response = await createComment(req);
     res.status(201).json(response);
   } catch (err) {
