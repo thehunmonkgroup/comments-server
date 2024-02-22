@@ -145,7 +145,7 @@ async function validateCaptcha(req) {
 
 async function deleteComment(comment_id) {
   await deleteCommentById(comment_id);
-  logger.info(util.format("Deleted comment: %d", comment_id));
+  logger.info(util.format("Deleted comment: %s", comment_id));
   return {
     success: true,
     commentId: comment_id,
