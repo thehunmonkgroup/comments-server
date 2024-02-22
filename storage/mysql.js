@@ -79,23 +79,17 @@ const StorageEngine = function(config, logger) {
 
   async function readComments(apiKey, itemId, queryArgs) {
     logger.debug(format("Reading comments: %s", itemId));
-    let sortKey, sortDirection;
+    let sortDirection;
     switch (queryArgs.sort) {
-      case 'top':
-        sortKey = 'id';
-        sortDirection = 'ASC';
-        break;
       case 'desc':
-        sortKey = 'id';
         sortDirection = 'DESC';
         break;
       default:
-        sortKey = 'id';
         sortDirection = 'ASC';
         break;
     }
     const db = makeDb(config.mysql);
-    const query = format("SELECT * FROM comments WHERE api_key = ? AND item_id = ? ORDER BY %s %s", sortKey, sortDirection);
+    const query = format("SELECT * FROM comments WHERE api_key = ? AND item_id = ? ORDER BY id %s", sortDirection);
     const args = [apiKey, itemId];
     try {
       const comments = await db.query(query, args);

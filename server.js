@@ -104,7 +104,6 @@ async function getComments(req) {
   const apiKey = req.query.apiKey;
   const queryArgs = {
     sort: req.query.sort,
-    pageSize: req.query.pageSize,
   };
   checkApiKey(apiKey);
   const pageId = req.query.pageId;
