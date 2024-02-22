@@ -9,6 +9,7 @@ import { renderMarkdown } from './markdown.js';
 import config from './config.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { randomUUID } from 'crypto'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,6 +36,15 @@ const { mailAdminComment } = mailerModule.default(config, logger);
 
 app.use(cors());
 app.use(express.json());
+
+// Error handling middleware
+app.use((err, _req, res, _next) => {
+  console.error(err.stack);
+  const statusCode = err.statusCode || 500; // Use the error's status code or default to 500
+  res.status(statusCode).json({
+    message: err.message || 'An unexpected error occurred'
+  });
+});
 
 function makeHashForId(id) {
   const idWithHashSecret = `${id}:${config.hashSecret}`;
@@ -113,7 +123,9 @@ async function validateCaptcha(req) {
   try {
     const secretKey = config.recaptchaSecretKey;
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    // req.connection.remoteAddress will provide IP address of connected user.
+    // logger.warn(util.format("IP: %s", ip));
+    // logger.warn(util.format("secretKey: %s", secretKey));
+    // logger.warn(util.format("catpchaResult: %s", captchaResult));
     var verificationUrl = util.format("https://www.google.com/recaptcha/api/siteverify?secret=%s&response=%s&remoteip=%s", secretKey, captchaResult, ip);
     const response = await got(verificationUrl);
     const data = JSON.parse(response.body);
@@ -126,7 +138,7 @@ async function validateCaptcha(req) {
       throw new Error(`Request validation failed: Failed captcha verification`);
     }
   } catch (error) {
-    logger.warn(util.format("Request validation failed: Failed captcha verification on IP %s: %s", ip, error));
+    logger.warn(util.format("Request validation failed: Failed captcha verification: %s", error));
     throw new Error(`Request validation failed: captcha verification error: ${error}`);
   }
 }
@@ -155,12 +167,12 @@ async function createComment(req) {
     );
   }
 
-  comment.commentId = comment.commentId || uuid.v4();
+  comment.commentId = comment.commentId || randomUUID();
   comment.createdAt = new Date().toISOString();
   comment.commentUrl = getCommentUrl(comment);
 
   const id = await storeComment(apiKey, comment);
-  logger.info(util.format("Created new comment for username: %s, email: %s, id: %d", username, userEmail, id));
+  logger.info(util.format("Created new comment for username: %s, email: %s, id: %d", comment.username, comment.userEmail, id));
   const hash = makeHashForId(id);
   mailAdminComment(comment, id, hash);
   return mapComment(comment);
@@ -205,7 +217,7 @@ app.get('/comments', async (req, res, next) => {
     const response = await getComments(req);
     res.json(response);
   } catch (err) {
-    next(err);
+    res.status(500).json({message: err.message});
   }
 });
 
@@ -217,7 +229,7 @@ app.get('/comments/delete/:comment_id/:hash', async (req, res, next) => {
     const response = await deleteComment(id);
     res.json(response);
   } catch (err) {
-    next(err);
+    res.status(500).json({message: err.message});
   }
 });
 
@@ -225,9 +237,9 @@ app.post('/comments/create', async (req, res, next) => {
   try {
     await validateCaptcha(req);
     const response = await createComment(req);
-    res.json(response);
+    res.status(201).json(response);
   } catch (err) {
-    next(err);
+    res.status(500).json({message: err.message});
   }
 });
 
