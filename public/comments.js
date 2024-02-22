@@ -240,7 +240,7 @@ function setGlobals(commentAreaNode) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initComments() {
   const commentAreaNode = document.querySelector("#comments");
   setGlobals(commentAreaNode);
   commentAreaNode.appendChild(createFormNode());
@@ -248,4 +248,4 @@ document.addEventListener('DOMContentLoaded', () => {
   commentListNode.className = 'comment-list';
   commentAreaNode.appendChild(commentListNode);
   refresh(commentListNode);
-});
+};
