@@ -6,7 +6,6 @@ const StorageEngine = function(config, logger) {
   logger.info("Initializing storage engine: mysql");
 
   function castComment(data) {
-    const createdAt = new Date(format("%s", data.created_at)).toISOString();
     return {
       itemId: data.item_id,
       commentUrl: data.comment_url,
@@ -14,12 +13,13 @@ const StorageEngine = function(config, logger) {
       parentId: data.parent_id || null,
       username: data.username,
       message: data.message,
-      createdAt: createdAt,
+      createdAt: data.created_at.toISOString(),
       hidden: data.hidden === 1 ? true : false,
     }
   }
 
   function makeDb(config) {
+    config.timezone = 'Z';
     const connection = mysql.createConnection(config);
     return {
       query(sql, args) {
