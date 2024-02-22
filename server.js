@@ -36,6 +36,7 @@ const { mailAdminComment } = mailerModule.default(config, logger);
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
 // Error handling middleware
 app.use((err, _req, res, _next) => {
