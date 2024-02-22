@@ -24,7 +24,7 @@ It's missing a lot of features compared to more robust solutions, but is very ea
 2. Use `comments.sql` to create the necessary database table for comments
 3. Run `npm install`
 4. Copy `config.example.js` to `config.js`, edit to taste
-5. Run `node server.js`
+5. Run `npm start`
 
 You should get a message `Comments server listening on port...`.
 
