@@ -112,7 +112,7 @@ const StorageEngine = function(config, logger) {
     try {
       await db.query(query, args);
     } catch (err) {
-      const message = format("Could not delete comment: %d, %s", comment_id, err);
+      const message = format("Could not delete comment: %s, %s", comment_id, err);
       logger.error(message);
       throw new Error(message);
     } finally {
