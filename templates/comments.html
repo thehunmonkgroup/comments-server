@@ -1,0 +1,59 @@
+<div id="comments" class="comments"
+  {% if site.comments_server %}
+    {% if site.comments_server.base_path %}
+    data-basepath="{{ site.comments_server.base_path }}"
+    {% endif %}
+    {% if site.comments_server.api_key %}
+    data-apikey="{{ site.comments_server.api_key }}"
+    {% endif %}
+    {% if site.comments_server.sort %}
+    data-sort="{{ site.comments_server.sort }}"
+    {% endif %}
+    {% if site.comments_server.google_recaptcha_site_key %}
+    data-recaptchasitekey="{{ site.comments_server.google_recaptcha_site_key }}"
+    {% endif %}>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var basePath = "{{ site.comments_server.base_path }}";
+    if (!basePath) {
+      basePath = window.location.protocol + '//' + window.location.hostname + ':3434';
+    }
+    var script = document.createElement('script');
+    script.src = basePath + "/comments.js";
+    script.onload = function() {
+      initComments();
+    };
+    document.head.appendChild(script);
+  });
+</script>
+
+<script id="template-no-comments-yet" type="text/x-jsrender">
+    No comments yet
+</script>
+
+<script id="template-comment-form" type="text/x-jsrender">
+  <form>
+    <div class="form-group">
+      <label for="comment-author" class="control-label">Name:<span class="comment-required">*</span></label>
+      <input type="text" class="form-control comment-author" required>
+    </div>
+    <div class="form-group">
+      <label for="comment-email" class="control-label">Email:</label>
+      <input type="email" class="form-control comment-email">
+      <div class="comment-email-hint">The e-mail is optional, and will never be published -- it is solely to allow the site owner to reply.</div>
+    </div>
+    <div class="form-group">
+      <label for="comment-content" class="control-label">Comment:<span class="comment-required">*</span></label>
+      <textarea class="form-control comment-content" rows="7" required></textarea>
+      <input type="hidden" class="recaptcha-value">
+    </div>
+    {% if site.comments_server and site.comments_server.google_recaptcha_site_key %}
+    <div class="recaptcha-container"></div>
+    {% endif %}>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <p class="comment-form-message"></p>
+  </form>
+</script>

@@ -1,0 +1,16 @@
+# All the following settings are optional, and defaults are specified in teh comments below.
+
+comments_server:
+  # The external base path where the comment server is located.
+  # Default: The FQDN of the site, port 3434.
+  base_path: example.com:3434
+  # API key to pass to the comments server.
+  # This must also be specified in the comments server config.js under
+  # config.validApiKeys.
+  # Default: The FQDN of the site.
+  api_key: example.com
+  # Google reCAPTCHA site key.
+  # Default: None
+  google_recaptcha_site_key: 'some-site-key'
+  # Comment sorting. Default: asc, options: asc, desc
+  sort: asc
