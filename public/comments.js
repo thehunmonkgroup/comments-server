@@ -39,7 +39,7 @@ function markInvalidFieldsAndIsValid(formDiv) {
   return isValid;
 }
 
-function submitComment(formDiv, parentId) {
+function submitComment(formDiv, parentId, token) {
   if (!markInvalidFieldsAndIsValid(formDiv)) {
     return false;
   }
@@ -54,10 +54,12 @@ function submitComment(formDiv, parentId) {
     pageUrl: pageUrl,
     username: formDiv.querySelector(".comment-author").value,
     userEmail: formDiv.querySelector(".comment-email").value,
-    captchaResult: formDiv.querySelector(".recaptcha-value").value,
   };
   if (parentId !== undefined) {
     payload.parentId = parentId;
+  }
+  if (token) {
+    payload.captchaResult = token;
   }
   fetch(requestUrl,
     {
@@ -153,21 +155,40 @@ function clearReplyForm(postDiv) {
   replyForm.innerHTML = ""
 }
 
+function configureRecaptchaSubmit(replyForm, parentCommentId) {
+  let widgetID
+  function onRecaptchaSubmitCallback(token) {
+    submitComment(replyForm, parentCommentId, token);
+    grecaptcha.reset(widgetID);
+  };
+  const recaptchaDiv = document.createElement('div');
+  const recaptchaContainer = replyForm.querySelector(".recaptcha-container");
+  recaptchaContainer.appendChild(recaptchaDiv);
+  widgetID = grecaptcha.render(recaptchaDiv, {
+    'sitekey': globalRecaptchaSiteKey,
+    'size': 'invisible',
+    'callback': onRecaptchaSubmitCallback
+  });
+  const submitButton = replyForm.querySelector("button");
+  submitButton.addEventListener('click', function(event) {
+    event.preventDefault();
+    grecaptcha.execute(widgetID);
+  });
+}
+
 function expandReplyForm(postDiv, parentCommentId) {
   const replyForm = postDiv.querySelector(".comment-form");
   replyForm.innerHTML = createFormHtml();
   if (globalRecaptchaSiteKey) {
-    const recaptchaId = crypto.randomUUID();
-    replyForm.querySelector(".recaptcha-container").innerHTML = `<div id="${recaptchaId}"></div>`;
-    grecaptcha.render(recaptchaId, {
-      'sitekey' : globalRecaptchaSiteKey,
-      'callback' : (response) => {
-        console.log('reCAPTCHA completed, response:', response);
-        replyForm.querySelector(".recaptcha-value").value = response;
-      },
+    configureRecaptchaSubmit(replyForm, parentCommentId);
+  }
+  else {
+    const submitButton = replyForm.querySelector("button");
+    submitButton.addEventListener('click', function(event) {
+      event.preventDefault();
+      submitComment(replyForm, parentCommentId, null);
     });
   }
-  replyForm.querySelector("button").onclick = () => submitComment(replyForm, parentCommentId);
 }
 
 function createFormHtml() {

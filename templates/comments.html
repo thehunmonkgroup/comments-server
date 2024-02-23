@@ -48,10 +48,9 @@
     <div class="form-group">
       <label for="comment-content" class="control-label">Comment:<span class="comment-required">*</span></label>
       <textarea class="form-control comment-content" rows="7" required></textarea>
-      <input type="hidden" class="recaptcha-value">
     </div>
     {% if site.comments_server and site.comments_server.google_recaptcha_site_key %}
-    <div class="recaptcha-container"></div>
+      <div class="recaptcha-container"></div>
     {% endif %}
     <button type="submit" class="btn btn-primary">Submit</button>
     <p class="comment-form-message"></p>

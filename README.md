@@ -12,11 +12,20 @@ It's missing a lot of features compared to more robust solutions, but is very ea
 
 * Multi-site support
 * Threaded commenting
-* reCaptcha
+* Invisible reCaptcha v2
 * Admin email notifications
   * New comments
   * Delete a comment via a link
 * MySQL storage
+
+## reCaptcha setup
+
+Invisible reCaptchas are generated automatically, it's only necessary to add the site key and secret key to your configuration:
+
+* Make sure the site key is included in `config.yml`
+* Make sure the secret key is included in `config.js`
+
+Set up reCaptcha site key and secret key at [https://www.google.com/recaptcha/admin](https://www.google.com/recaptcha/admin) for your site.
 
 ## Server Setup
 
@@ -37,7 +46,6 @@ For other configurations, you'll need to modify accordingly.
 1. Copy `templates/comments.html` to the `_includes` directory in the Jekyll install
 2. Add `{% include comments.html %}` to any Jekyll templates where you want comments injected
 3. Copy the settings in `_config.example.yml` to `_config.yml` for the Jekyll site, and adjust as needed.
-   For reCaptcha configuration instructions, see [https://www.google.com/recaptcha](https://www.google.com/recaptcha)
 
 ## Wish list
 
