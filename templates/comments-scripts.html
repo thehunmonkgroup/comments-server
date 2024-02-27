@@ -1,4 +1,4 @@
-{% if site.google_recaptcha %}
+{% if site.comments_server and site.comments_server.google_recaptcha_site_key %}
 <script>
 (function loadRecaptchaScript() {
   var script = document.createElement('script');
