@@ -76,7 +76,7 @@ function submitComment(formDiv, parentId, token) {
 function createNodesForComments(comments) {
   if (comments.length === 0){
     const heading = document.createElement("p");
-    var tmpl = $.templates("#template-no-comments-yet");
+    var tmpl = window.jsrender.templates("#template-no-comments-yet");
     var html = tmpl.render({});
     heading.setAttribute("class", "no-comments-yet");
     heading.innerText = html;
@@ -192,7 +192,7 @@ function expandReplyForm(postDiv, parentCommentId) {
 }
 
 function createFormHtml() {
-  var tmpl = $.templates("#template-comment-form");
+  var tmpl = window.jsrender.templates("#template-comment-form");
   var html = tmpl.render({recaptchaSiteKey: globalRecaptchaSiteKey});
   return html;
 }
