@@ -47,7 +47,8 @@ For other configurations, you'll need to modify accordingly.
 2. Add `{% include comments.html %}` to any Jekyll templates where you want comments injected
 3. If you're not already loading the recaptcha script by some other means add `{% include comments-scripts.html %}` to any Jekyll templates where you want comments injected
 4. Copy `templates/comments.scss` into a Jekyll stylesheet if you'd like the default CSS styling
-5. Copy the settings in `_config.example.yml` to `_config.yml` for the Jekyll site, and adjust as needed.
+5. The frontend depends on [jsrender](https://github.com/borismoore/jsrender), so load this script on any page where you want comments.
+6. Copy the settings in `_config.example.yml` to `_config.yml` for the Jekyll site, and adjust as needed.
 
 ## Wish list
 
