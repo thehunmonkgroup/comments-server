@@ -45,7 +45,8 @@ For other configurations, you'll need to modify accordingly.
 
 1. Copy `templates/comments.html` to the `_includes` directory in the Jekyll install
 2. Add `{% include comments.html %}` to any Jekyll templates where you want comments injected
-3. Copy the settings in `_config.example.yml` to `_config.yml` for the Jekyll site, and adjust as needed.
+3. Copy `templates/comments.scss` into a Jekyll stylesheet if you'd like the default CSS styling
+4. Copy the settings in `_config.example.yml` to `_config.yml` for the Jekyll site, and adjust as needed.
 
 ## Wish list
 

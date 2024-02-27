@@ -1,0 +1,91 @@
+/* Comments. */
+
+#comments {
+
+  p.no-comments-yet {
+    font-size: 1.1em;
+  }
+  p.comment-title {
+    font-size: 36px;
+    margin: 20px 0px 10px 0px;
+    text-align: left;
+    font-weight: bold;
+  }
+  div.comment-post {
+    margin: 15px 0px 15px 0px;
+    clear: both;
+    min-height: 65px; /* correspond to avatar size */
+  }
+  div.comment-avatar{
+    float: left;
+    padding: 10px 0 0 0;
+    width: 50px;
+    color: grey;
+  }
+  div.comment-form-root {
+    margin-bottom: 5px;
+    .comment-expand-button {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  }
+  div.comment-body {
+    margin: 0px 0px 0px 60px;
+  }
+  div.comment-body header.comment-header span.comment-author{
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  div.comment-body header.comment-header span.comment-date{
+    font-size: 90%;
+    color: gray;
+  }
+  div.comment-body div.comment-content{
+    padding: 3px 0px 5px 0px;
+    margin: 0px 0px 0px 0px;
+  }
+  div.comment-form {
+    padding: 5px;
+    margin-top: 5px;
+  }
+  span.comment-required {
+    font-weight: bold;
+    color: red;
+  }
+  div.comment-list p{
+    margin-top: 15px;
+  }
+  form p.comment-form-message {
+    font-weight: bold;
+    font-size: 110%;
+    margin-top: 10px;
+    line-height: 30px;
+    display: none;
+  }
+  form p.comment-form-message.success {
+      color: darkgreen;
+      display: block;
+  }
+  form p.comment-form-message.fail {
+    color: darkred;
+    display: block;
+  }
+  form .comment-url-group {
+    display: none;
+  }
+
+  form .comment-email-hint {
+    font-size: 70%;
+    font-style: italic;
+    width: 100%;
+  }
+}
+
+@media (min-width: 767px) {
+  #comments {
+    width: 767px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* End-Comments. */
