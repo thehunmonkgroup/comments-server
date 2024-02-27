@@ -3,6 +3,13 @@ let globalApiKey = window.location.hostname;
 let globalRecaptchaSiteKey;
 let globalSort = 'asc';
 
+// jsrender only provides the window.jsrender object if jQuery
+// is NOT loaded. For consistency, we'll only assign the special
+// jQuery variable to jsrender if jQuery is not loaded.
+if (!window.jQuery) {
+  const $ = window.jsrender;
+}
+
 function handleResponse(response, formDiv) {
   if (response.status === 201) {
     formDiv.querySelectorAll("input").forEach(input => input.value = "");
@@ -76,7 +83,7 @@ function submitComment(formDiv, parentId, token) {
 function createNodesForComments(comments) {
   if (comments.length === 0){
     const heading = document.createElement("p");
-    var tmpl = window.jsrender.templates("#template-no-comments-yet");
+    var tmpl = $.templates("#template-no-comments-yet");
     var html = tmpl.render({});
     heading.setAttribute("class", "no-comments-yet");
     heading.innerText = html;
@@ -192,7 +199,7 @@ function expandReplyForm(postDiv, parentCommentId) {
 }
 
 function createFormHtml() {
-  var tmpl = window.jsrender.templates("#template-comment-form");
+  var tmpl = $.templates("#template-comment-form");
   var html = tmpl.render({recaptchaSiteKey: globalRecaptchaSiteKey});
   return html;
 }
