@@ -12,8 +12,11 @@ config.hashSecret = 'some_random_string';
 // Port to listen on.
 config.port = 3434;
 
-// Recaptcha secret key, optional. If set, recaptcha will be enforced.
-config.recaptchaSecretKey = '';
+// Recaptcha secret key, optional. Setting is per API key. If set, recaptcha will be enforced.
+// Key is one of the valid API keys above, value is the recaptcha secret key.
+config.recaptchaSecretKeys = {
+  'example.com': 'some_secret_key',
+};
 
 // Storage engine, currently only 'mysql' is supported.
 config.storageEngine = 'mysql';

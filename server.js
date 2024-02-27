@@ -115,13 +115,11 @@ async function getComments(req) {
   };
 }
 
-async function validateCaptcha(req) {
-  const captchaResult = req.body.captchaResult;
+async function validateCaptcha(secretKey, captchaResult) {
   if(captchaResult === undefined || captchaResult === '' || captchaResult === null) {
     throw new Error(`Request validation failed: Please select captcha`);
   }
   try {
-    const secretKey = config.recaptchaSecretKey;
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     // logger.warn(util.format("IP: %s", ip));
     // logger.warn(util.format("secretKey: %s", secretKey));
@@ -234,9 +232,11 @@ app.get('/comments/delete/:comment_id/:hash', async (req, res, next) => {
 });
 
 app.post('/comments/create', async (req, res, next) => {
+  const apiKey = req.query.apiKey;
   try {
-    if (config.recaptchaSecretKey) {
-      await validateCaptcha(req);
+    if (config.recaptchaSecretKeys && config.recaptchaSecretKeys[apiKey]) {
+      const captchaResult = req.body.captchaResult;
+      await validateCaptcha(config.recaptchaSecretKeys[apiKey], captchaResult);
     }
     const response = await createComment(req);
     res.status(201).json(response);
