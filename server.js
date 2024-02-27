@@ -115,7 +115,7 @@ async function getComments(req) {
   };
 }
 
-async function validateCaptcha(secretKey, captchaResult) {
+async function validateCaptcha(req, secretKey, captchaResult) {
   if(captchaResult === undefined || captchaResult === '' || captchaResult === null) {
     throw new Error(`Request validation failed: Please select captcha`);
   }
@@ -236,7 +236,7 @@ app.post('/comments/create', async (req, res, next) => {
   try {
     if (config.recaptchaSecretKeys && config.recaptchaSecretKeys[apiKey]) {
       const captchaResult = req.body.captchaResult;
-      await validateCaptcha(config.recaptchaSecretKeys[apiKey], captchaResult);
+      await validateCaptcha(req, config.recaptchaSecretKeys[apiKey], captchaResult);
     }
     const response = await createComment(req);
     res.status(201).json(response);
