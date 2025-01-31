@@ -166,12 +166,12 @@ function configureRecaptchaSubmit(replyForm, parentCommentId) {
   let widgetID
   function onRecaptchaSubmitCallback(token) {
     submitComment(replyForm, parentCommentId, token);
-    grecaptcha.reset(widgetID);
+    grecaptcha.enterprise.reset(widgetID);
   };
   const recaptchaDiv = document.createElement('div');
   const recaptchaContainer = replyForm.querySelector(".recaptcha-container");
   recaptchaContainer.appendChild(recaptchaDiv);
-  widgetID = grecaptcha.render(recaptchaDiv, {
+  widgetID = grecaptcha.enterprise.render(recaptchaDiv, {
     'sitekey': globalRecaptchaSiteKey,
     'size': 'invisible',
     'callback': onRecaptchaSubmitCallback
@@ -179,7 +179,7 @@ function configureRecaptchaSubmit(replyForm, parentCommentId) {
   const submitButton = replyForm.querySelector("button");
   submitButton.addEventListener('click', function(event) {
     event.preventDefault();
-    grecaptcha.execute(widgetID);
+    grecaptcha.enterprise.execute(widgetID);
   });
 }
 
